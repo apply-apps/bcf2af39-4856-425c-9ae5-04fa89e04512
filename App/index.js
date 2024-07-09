@@ -1,16 +1,44 @@
 // Filename: index.js
 // Combined code from all files
-
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, Button, View, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import axios from 'axios';
 
-const App = () => {
+export default function App() {
     const [topic, setTopic] = useState('');
     const [story, setStory] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const generateStory = () => {
-        const mockStory = `Once upon a time, in a faraway land, there was a magical kingdom where the topic was ${topic}. The people of this kingdom loved to talk about ${topic} and often embarked on wondrous adventures related to it. One day, a brave hero decided to discover the true essence of ${topic} and went on a journey that would change the kingdom forever.`;
-        setStory(mockStory);
+    const generateStory = async () => {
+        if (!topic) {
+            alert('Please enter a topic.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+                prompt: `Write a children's fairytale about ${topic}.`,
+                max_tokens: 150,
+                n: 1,
+                stop: null,
+                temperature: 0.7
+            }, {
+                headers: {
+                    'Authorization': `Bearer YOUR_API_KEY_HERE`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const story = response.data.choices[0].text.trim();
+            setStory(story);
+        } catch (error) {
+            console.error('Error generating story:', error);
+            alert('Error generating story. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -26,11 +54,12 @@ const App = () => {
                 <TouchableOpacity style={styles.button} onPress={generateStory}>
                     <Text style={styles.buttonText}>Generate Story</Text>
                 </TouchableOpacity>
+                {loading && <ActivityIndicator size="large" color="#6DA34D" />}
                 {story && <View style={styles.storyBox}><Text style={styles.story}>{story}</Text></View>}
             </ScrollView>
         </SafeAreaView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -63,6 +92,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 10,
+        alignItems: 'center',
     },
     buttonText: {
         color: '#FFFFFF',
@@ -81,5 +111,3 @@ const styles = StyleSheet.create({
         color: '#555',
     },
 });
-
-export default App;
