@@ -1,17 +1,20 @@
 // Filename: index.js
 // Combined code from all files
+
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 
 export default function App() {
-    const [topic, setTopic] = useState('');
+    const [hero, setHero] = useState('');
+    const [villain, setVillain] = useState('');
+    const [plot, setPlot] = useState('');
     const [story, setStory] = useState('');
     const [loading, setLoading] = useState(false);
 
     const generateStory = async () => {
-        if (!topic) {
-            alert('Please enter a topic.');
+        if (!hero || !villain || !plot) {
+            alert('Please enter a hero, a villain, and a plot.');
             return;
         }
 
@@ -19,7 +22,7 @@ export default function App() {
 
         try {
             const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
-                prompt: `Write a children's fairytale about ${topic}.`,
+                prompt: `Write a children's fairytale with the hero ${hero}, the villain ${villain}, and the plot ${plot}.`,
                 max_tokens: 150,
                 n: 1,
                 stop: null,
@@ -47,9 +50,21 @@ export default function App() {
                 <Text style={styles.title}>Fairytale Generator</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter a topic"
-                    value={topic}
-                    onChangeText={setTopic}
+                    placeholder="Enter the hero"
+                    value={hero}
+                    onChangeText={setHero}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter the villain"
+                    value={villain}
+                    onChangeText={setVillain}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter the plot"
+                    value={plot}
+                    onChangeText={setPlot}
                 />
                 <TouchableOpacity style={styles.button} onPress={generateStory}>
                     <Text style={styles.buttonText}>Generate Story</Text>
